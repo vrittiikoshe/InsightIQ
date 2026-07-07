@@ -11,6 +11,8 @@ from .utils import extract_pdf_text
 
 from ai_engine.services import generate_summary
 from ai_engine.classifiers import classify_document
+from ai_engine.keyword_extractor import extract_keywords
+from ai_engine.analysis import analyze_document
 
 
 class DocumentUploadView(generics.CreateAPIView):
@@ -26,31 +28,49 @@ class DocumentUploadView(generics.CreateAPIView):
 
         if document.file_type == "PDF":
 
+            # Extract text
             extracted_text = extract_pdf_text(document.file.path)
 
             print("STEP 2 : Text Extracted")
             print(extracted_text[:300])
 
+            # Generate Summary
             summary = generate_summary(extracted_text)
 
             print("STEP 3 : Summary Generated")
-            print(summary)
 
+            # Classify Document
             category = classify_document(extracted_text)
 
             print("STEP 4 : Category Generated")
             print(category)
 
+            # Extract Keywords
+            keywords = extract_keywords(extracted_text)
+
+            print("STEP 5 : Keywords Extracted")
+            print(keywords)
+
+            # Analyze Document
+            analysis = analyze_document(extracted_text)
+
+            print("STEP 6 : Analysis Generated")
+            print(analysis)
+
+            # Save Results
             document.extracted_text = extracted_text
             document.summary = summary
             document.category = category
+            document.keywords = keywords
+            document.insights = analysis.get("insights", "")
+            document.recommendations = analysis.get("recommendations", "")
 
             document.status = "COMPLETED"
             document.ai_processed = True
 
             document.save()
 
-            print("STEP 5 : Saved in Database")
+            print("STEP 7 : Saved in Database")
 
 
 class DocumentListView(generics.ListAPIView):
@@ -103,4 +123,4 @@ class DocumentSearchView(generics.ListAPIView):
         ).filter(
             Q(title__icontains=query) |
             Q(extracted_text__icontains=query)
-        ).order_by("-uploaded_at") 
+        ).order_by("-uploaded_at")
