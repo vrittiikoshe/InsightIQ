@@ -24,5 +24,25 @@ class DocumentSerializer(serializers.ModelSerializer):
             "uploaded_at",
             "status",
             "summary",
+            "category",
+            "keywords",
+            "insights",
+            "recommendations",
+            "ai_processed",
+        ]
+        
+        fields = [
+            "id",
+            "title",
+            "file",
+            "file_type",
+            "uploaded_by",
+            "uploaded_at",
+            "status",
+            "summary",
+            "category",
+            "keywords",
+            "insights",
+            "recommendations",
             "ai_processed",
         ]

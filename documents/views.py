@@ -1,5 +1,6 @@
 from django.db.models import Q
 import os
+
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -7,11 +8,12 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Document
 from .serializers import DocumentSerializer
 from .utils import extract_pdf_text
+
 from ai_engine.services import generate_summary
+from ai_engine.classifiers import classify_document
 
 
 class DocumentUploadView(generics.CreateAPIView):
-
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -27,27 +29,30 @@ class DocumentUploadView(generics.CreateAPIView):
             extracted_text = extract_pdf_text(document.file.path)
 
             print("STEP 2 : Text Extracted")
-
             print(extracted_text[:300])
 
             summary = generate_summary(extracted_text)
 
             print("STEP 3 : Summary Generated")
-
             print(summary)
 
-            document.extracted_text = extracted_text
+            category = classify_document(extracted_text)
 
+            print("STEP 4 : Category Generated")
+            print(category)
+
+            document.extracted_text = extracted_text
             document.summary = summary
+            document.category = category
 
             document.status = "COMPLETED"
-
             document.ai_processed = True
 
             document.save()
 
-            print("STEP 4 : Saved in Database")
-            
+            print("STEP 5 : Saved in Database")
+
+
 class DocumentListView(generics.ListAPIView):
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
@@ -56,7 +61,8 @@ class DocumentListView(generics.ListAPIView):
         return Document.objects.filter(
             uploaded_by=self.request.user
         ).order_by("-uploaded_at")
-        
+
+
 class DocumentDetailView(generics.RetrieveAPIView):
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
@@ -65,7 +71,8 @@ class DocumentDetailView(generics.RetrieveAPIView):
         return Document.objects.filter(
             uploaded_by=self.request.user
         )
-        
+
+
 class DocumentDeleteView(generics.DestroyAPIView):
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
@@ -82,7 +89,8 @@ class DocumentDeleteView(generics.DestroyAPIView):
                 os.remove(instance.file.path)
 
         instance.delete()
-        
+
+
 class DocumentSearchView(generics.ListAPIView):
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
@@ -95,5 +103,4 @@ class DocumentSearchView(generics.ListAPIView):
         ).filter(
             Q(title__icontains=query) |
             Q(extracted_text__icontains=query)
-        ).order_by("-uploaded_at")
-        
+        ).order_by("-uploaded_at") 

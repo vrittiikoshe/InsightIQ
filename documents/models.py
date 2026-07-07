@@ -45,6 +45,24 @@ class Document(models.Model):
 
     summary = models.TextField(blank=True)
 
+    category = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    keywords = models.JSONField(
+        default=list,
+        blank=True
+    )
+
+    insights = models.TextField(
+        blank=True
+    )
+
+    recommendations = models.TextField(
+        blank=True
+    )
+
     ai_processed = models.BooleanField(default=False)
 
     class Meta:
