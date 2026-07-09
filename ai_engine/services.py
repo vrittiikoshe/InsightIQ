@@ -1,12 +1,6 @@
-import google.generativeai as genai
-
-from django.conf import settings
-
 from .prompts import SUMMARY_PROMPT
+from .client import model
 
-genai.configure(api_key=settings.GEMINI_API_KEY)
-
-model = genai.GenerativeModel("gemini-2.5-flash")
 
 
 def generate_summary(document_text):
@@ -15,6 +9,10 @@ def generate_summary(document_text):
         text=document_text
     )
 
-    response = model.generate_content(prompt)
+    try:
+        response = model.generate_content(prompt)
+        return response.text.strip()
 
-    return response.text
+    except Exception as e:
+        print(e)
+        return ""

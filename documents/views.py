@@ -124,3 +124,4 @@ class DocumentSearchView(generics.ListAPIView):
             Q(title__icontains=query) |
             Q(extracted_text__icontains=query)
         ).order_by("-uploaded_at")
+        

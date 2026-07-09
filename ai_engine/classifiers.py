@@ -1,10 +1,4 @@
-import google.generativeai as genai
-
-from django.conf import settings
-
-genai.configure(api_key=settings.GEMINI_API_KEY)
-
-model = genai.GenerativeModel("gemini-2.5-flash")
+from .client import model
 
 
 DOCUMENT_CLASSIFICATION_PROMPT = """
@@ -42,4 +36,11 @@ def classify_document(document_text):
 
     response = model.generate_content(prompt)
 
-    return response.text.strip()
+    try:
+        response = model.generate_content(prompt)
+        return response.text.strip()
+
+    except Exception as e:
+        print(e)
+        return "Unknown"
+
