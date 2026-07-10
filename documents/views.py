@@ -1,81 +1,38 @@
-from django.db.models import Q
 import os
 
+from django.db.models import Q
+
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated
 
 from .models import Document
 from .serializers import DocumentSerializer
-from .utils import extract_pdf_text
-
-from ai_engine.services import generate_summary
-from ai_engine.classifiers import classify_document
-from ai_engine.keyword_extractor import extract_keywords
-from ai_engine.analysis import analyze_document
-from ai_engine.rag.chunking import split_document
-from ai_engine.rag.vector_store import add_document
+from .services import process_pdf
 
 
 class DocumentUploadView(generics.CreateAPIView):
+    """
+    API to upload and process PDF documents.
+    """
+
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
     def perform_create(self, serializer):
-
-        document = serializer.save(uploaded_by=self.request.user)
-
-        
+        document = serializer.save(
+            uploaded_by=self.request.user
+        )
 
         if document.file_type == "PDF":
+            process_pdf(document)
 
-            # Extract text
-            extracted_text = extract_pdf_text(document.file.path)
+    def perform_destroy(self, instance):
+        if instance.file and os.path.isfile(instance.file.path):
+            os.remove(instance.file.path)
 
-
-            # Generate Summary
-            summary = generate_summary(extracted_text)
-
-            
-
-            # Classify Document
-            category = classify_document(extracted_text)
-
-
-            # Extract Keywords
-            keywords = extract_keywords(extracted_text)
-
-
-            # Analyze Document
-            analysis = analyze_document(extracted_text)
-
-            # Create chunks for RAG
-            chunks = split_document(extracted_text)
-
-            # Store chunks in ChromaDB
-            add_document(
-                document.id,
-                chunks
-            )
-
-            
-
-            # Save Results
-            document.extracted_text = extracted_text
-            document.summary = summary
-            document.category = category
-            document.keywords = keywords
-            document.insights = analysis.get("insights", "")
-            document.recommendations = analysis.get("recommendations", "")
-
-            document.status = "COMPLETED"
-            document.ai_processed = True
-
-            document.save()
-
-            
-
+        instance.delete()
 
 class DocumentListView(generics.ListAPIView):
     serializer_class = DocumentSerializer
@@ -106,26 +63,30 @@ class DocumentDeleteView(generics.DestroyAPIView):
             uploaded_by=self.request.user
         )
 
-    def perform_destroy(self, instance):
+    # def perform_destroy(self, instance):
+    #     if instance.file and os.path.isfile(instance.file.path):
+    #         os.remove(instance.file.path)
 
-        if instance.file:
-            if os.path.isfile(instance.file.path):
-                os.remove(instance.file.path)
-
-        instance.delete()
-
+    #     instance.delete()
 
 class DocumentSearchView(generics.ListAPIView):
+    """
+    Search uploaded documents by title or extracted text.
+    """
+
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         query = self.request.GET.get("q", "")
 
-        return Document.objects.filter(
-            uploaded_by=self.request.user
-        ).filter(
-            Q(title__icontains=query) |
-            Q(extracted_text__icontains=query)
-        ).order_by("-uploaded_at")
-        
+        return (
+            Document.objects.filter(
+                uploaded_by=self.request.user
+            )
+            .filter(
+                Q(title__icontains=query)
+                | Q(extracted_text__icontains=query)
+            )
+            .order_by("-uploaded_at")
+        )
