@@ -13,6 +13,8 @@ from ai_engine.services import generate_summary
 from ai_engine.classifiers import classify_document
 from ai_engine.keyword_extractor import extract_keywords
 from ai_engine.analysis import analyze_document
+from ai_engine.rag.chunking import split_document
+from ai_engine.rag.vector_store import add_document
 
 
 class DocumentUploadView(generics.CreateAPIView):
