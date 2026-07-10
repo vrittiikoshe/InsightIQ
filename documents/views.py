@@ -26,38 +26,40 @@ class DocumentUploadView(generics.CreateAPIView):
 
         document = serializer.save(uploaded_by=self.request.user)
 
-        print("STEP 1 : Document Saved")
+        
 
         if document.file_type == "PDF":
 
             # Extract text
             extracted_text = extract_pdf_text(document.file.path)
 
-            print("STEP 2 : Text Extracted")
-            print(extracted_text[:300])
 
             # Generate Summary
             summary = generate_summary(extracted_text)
 
-            print("STEP 3 : Summary Generated")
+            
 
             # Classify Document
             category = classify_document(extracted_text)
 
-            print("STEP 4 : Category Generated")
-            print(category)
 
             # Extract Keywords
             keywords = extract_keywords(extracted_text)
 
-            print("STEP 5 : Keywords Extracted")
-            print(keywords)
 
             # Analyze Document
             analysis = analyze_document(extracted_text)
 
-            print("STEP 6 : Analysis Generated")
-            print(analysis)
+            # Create chunks for RAG
+            chunks = split_document(extracted_text)
+
+            # Store chunks in ChromaDB
+            add_document(
+                document.id,
+                chunks
+            )
+
+            
 
             # Save Results
             document.extracted_text = extracted_text
@@ -72,7 +74,7 @@ class DocumentUploadView(generics.CreateAPIView):
 
             document.save()
 
-            print("STEP 7 : Saved in Database")
+            
 
 
 class DocumentListView(generics.ListAPIView):
