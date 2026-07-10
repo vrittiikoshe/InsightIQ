@@ -1,12 +1,12 @@
 import AuthLayout from "../layouts/AuthLayout";
 import Branding from "../components/common/Branding";
-import LoginCard from "../components/common/LoginCard";
+import LoginForm from "../components/auth/LoginForm";
 
 function Login() {
   return (
     <AuthLayout
       left={<Branding />}
-      right={<LoginCard />}
+      right={<LoginForm />}
     />
   );
 }
