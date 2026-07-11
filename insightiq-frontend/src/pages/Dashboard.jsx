@@ -1,8 +1,21 @@
+import DashboardLayout from "../components/dashboard/DashboardLayout";
+import Sidebar from "../components/dashboard/Sidebar";
+import Topbar from "../components/dashboard/Topbar";
+
 function Dashboard() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <h1 className="text-5xl font-bold">Dashboard</h1>
-    </div>
+    <DashboardLayout
+      sidebar={<Sidebar />}
+      topbar={<Topbar />}
+    >
+      <h1 className="text-4xl font-bold">
+        Welcome to InsightIQ
+      </h1>
+
+      <p className="mt-3 text-stone-500">
+        Ready to analyze your documents today?
+      </p>
+    </DashboardLayout>
   );
 }
 

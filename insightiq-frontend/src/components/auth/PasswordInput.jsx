@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-function PasswordInput() {
+function PasswordInput({ value, onChange }) {
   const [show, setShow] = useState(false);
 
   return (
@@ -10,6 +10,8 @@ function PasswordInput() {
       <Input
         type={show ? "text" : "password"}
         placeholder="Password"
+        value={value}
+        onChange={onChange}
       />
 
       <button

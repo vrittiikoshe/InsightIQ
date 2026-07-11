@@ -2,7 +2,7 @@ function AuthHeader() {
   return (
     <div className="mb-8">
       <h2 className="text-4xl font-bold text-[#1F2937]">
-        Welcome back 👋
+        Welcome👋
       </h2>
 
       <p className="mt-2 text-gray-500">
