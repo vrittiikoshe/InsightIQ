@@ -2,7 +2,8 @@ import os
 
 from django.db.models import Q
 
-from rest_framework import generics
+from rest_framework import generics, status
+from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 
@@ -12,18 +13,25 @@ from .services import process_pdf
 
 
 class DocumentUploadView(generics.CreateAPIView):
-    """
-    API to upload and process PDF documents.
-    """
-
     serializer_class = DocumentSerializer
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
+
+    def create(self, request, *args, **kwargs):
+        
+        print(request.data)
+        serializer = self.get_serializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return super().create(request, *args, **kwargs)
 
     def perform_create(self, serializer):
         document = serializer.save(
             uploaded_by=self.request.user
         )
+        
 
         if document.file_type == "PDF":
             process_pdf(document)
