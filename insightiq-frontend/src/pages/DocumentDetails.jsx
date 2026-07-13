@@ -7,6 +7,8 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
 import { getDocument } from "../services/documentService";
+import ChatBox from "../components/ChatBox";
+
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -175,6 +177,8 @@ function DocumentDetails() {
           <p className="text-stone-600 leading-7">
             {document.recommendations || "No recommendations available."}
           </p>
+          
+          <ChatBox documentId={document.id} />
 
         </div>
 
