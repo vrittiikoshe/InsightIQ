@@ -7,8 +7,7 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
 import { getDocument } from "../services/documentService";
-import ChatBox from "../components/ChatBox";
-
+import ChatBox from "../components/chat/ChatBox";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
