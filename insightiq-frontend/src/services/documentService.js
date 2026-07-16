@@ -44,3 +44,8 @@ export const deleteDocument = async (id) => {
   const response = await api.delete(`/documents/delete/${id}/`);
   return response.data;
 };
+
+export const searchDocuments = async (query) => {
+  const response = await api.get(`/documents/search/?q=${query}`);
+  return response.data;
+};

@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FileText, Eye, Trash2 } from "lucide-react";
+import toast from "react-hot-toast";
 
 import {
   getDocuments,
   deleteDocument,
+  searchDocuments,
 } from "../../services/documentService";
 
-function RecentDocuments() {
+function RecentDocuments({ searchQuery }) {
   const navigate = useNavigate();
 
   const [documents, setDocuments] = useState([]);
@@ -22,8 +24,24 @@ function RecentDocuments() {
   };
 
   useEffect(() => {
+    if (searchQuery.trim() === "") {
     loadDocuments();
-  }, []);
+  } else {
+    handleSearch();
+  }
+  }, [searchQuery]);
+
+  const handleSearch = async () => {
+    console.log("Searching:", searchQuery);
+
+    try {
+      const data = await searchDocuments(searchQuery);
+      console.log("Search Result:", data);
+      setDocuments(data);
+    } catch (error) {
+      console.error("Search failed:", error);
+    }
+  };
 
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
@@ -39,10 +57,10 @@ function RecentDocuments() {
         prev.filter((doc) => doc.id !== id)
       );
 
-      alert("Document deleted successfully.");
+      toast.success("Document deleted successfully!");
     } catch (error) {
       console.error(error);
-      alert("Failed to delete document.");
+      toast.error("Failed to delete document.");
     }
   };
 

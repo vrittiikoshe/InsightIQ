@@ -1,6 +1,6 @@
 import { Bell, Search } from "lucide-react";
 
-function Topbar() {
+function Topbar({ searchQuery, setSearchQuery }) {
   return (
     <div className="flex justify-between items-center w-full">
 
@@ -12,6 +12,8 @@ function Topbar() {
         />
 
         <input
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search documents..."
           className="w-96 rounded-xl border border-stone-200 py-2.5 pl-10 pr-4 outline-none"
         />

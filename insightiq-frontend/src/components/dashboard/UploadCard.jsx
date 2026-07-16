@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import toast from "react-hot-toast";
 
 import { uploadDocument } from "../../services/documentService";
 
@@ -18,17 +19,34 @@ function UploadCard() {
 
       console.log("Upload Success:", response);
 
-      alert("Document uploaded successfully 🚀");
+      toast.success("Document uploaded successfully!", {
+        icon: "📄",
+      });
+
+      // Reset file input so same PDF can be selected again if needed
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
+
+      // Temporary refresh
+      // Later we'll replace this with automatic state update
+      setTimeout(() => {
+        window.location.reload();
+      }, 1200);
+
     } catch (error) {
       console.error("Upload Error:", error);
 
       console.log("Status:", error.response?.status);
       console.log("Data:", error.response?.data);
 
-      alert(
+      toast.error(
         error.response?.data
           ? JSON.stringify(error.response.data)
-          : error.message
+          : "Upload failed!",
+        {
+          icon: "❌",
+        }
       );
     } finally {
       setLoading(false);
@@ -37,6 +55,7 @@ function UploadCard() {
 
   return (
     <div className="mt-10 bg-white rounded-3xl border border-stone-200 p-10">
+
       <input
         ref={inputRef}
         hidden
@@ -46,6 +65,7 @@ function UploadCard() {
       />
 
       <div className="flex flex-col items-center justify-center border-2 border-dashed border-stone-300 rounded-2xl py-16">
+
         <div className="h-20 w-20 rounded-full bg-[#65735B]/10 flex items-center justify-center">
           <UploadCloud
             size={38}
@@ -63,12 +83,15 @@ function UploadCard() {
 
         <Button
           type="button"
-          className="mt-8 bg-[#65735B] hover:bg-[#55624D]"
+          disabled={loading}
+          className="mt-8 bg-[#65735B] hover:bg-[#55624D] disabled:opacity-70"
           onClick={() => inputRef.current.click()}
         >
           {loading ? "Uploading..." : "Browse Files"}
         </Button>
+
       </div>
+
     </div>
   );
 }

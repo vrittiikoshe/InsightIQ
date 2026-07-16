@@ -4,6 +4,9 @@ import Topbar from "../components/dashboard/Topbar";
 import StatCard from "../components/dashboard/StatCard";
 import UploadCard from "../components/dashboard/UploadCard";
 import RecentDocuments from "../components/dashboard/RecentDocuments";
+import { useEffect, useState } from "react";
+import { getDashboardStats } from "../services/dashboardService";
+import AnalyticsChart from "../components/dashboard/AnalyticsChart";
 
 import {
   FileText,
@@ -17,6 +20,28 @@ function Dashboard() {
   const hour = new Date().getHours();
 
   let greeting = "";
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [stats, setStats] = useState({
+  total_documents: 0,
+  completed: 0,
+  processing: 0,
+  failed: 0,
+  ai_chats: 0,
+});
+
+useEffect(() => {
+  loadStats();
+}, []);
+
+const loadStats = async () => {
+  try {
+    const data = await getDashboardStats();
+    setStats(data);
+  } catch (error) {
+    console.error("Error loading dashboard stats:", error);
+  }
+};
 
   if (hour < 12) {
     greeting = "Good Morning";
@@ -31,7 +56,12 @@ function Dashboard() {
   return (
     <DashboardLayout
       sidebar={<Sidebar />}
-      topbar={<Topbar />}
+      topbar={
+        <Topbar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+        />
+    }
     >
 
       <h1 className="text-5xl font-bold">
@@ -46,36 +76,37 @@ function Dashboard() {
 
         <StatCard
           title="Documents"
-          value="25"
-          subtitle="+5 this week"
+          value={stats.total_documents}
+          subtitle="Uploaded documents"
           icon={<FileText className="text-[#65735B]" />}
         />
 
         <StatCard
           title="AI Chats"
-          value="142"
-          subtitle="+18 today"
+          value={stats.ai_chats}
+          subtitle="Questions asked"
           icon={<MessageSquare className="text-[#65735B]" />}
         />
 
         <StatCard
           title="Insights"
-          value="94%"
-          subtitle="Excellent"
+          value={stats.completed}
+          subtitle="Completed analyses"
           icon={<BarChart3 className="text-[#65735B]" />}
         />
 
         <StatCard
           title="Processing"
-          value="3"
-          subtitle="Running..."
+          value={stats.processing}
+          subtitle="Currently processing"
           icon={<Loader className="text-[#65735B]" />}
         />
 
       </div>
 
       <UploadCard />
-      <RecentDocuments />
+      <AnalyticsChart stats={stats} />
+      <RecentDocuments searchQuery={searchQuery} />
 
     </DashboardLayout>
   );

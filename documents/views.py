@@ -10,6 +10,8 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Document
 from .serializers import DocumentSerializer
 from .services import process_pdf
+from rest_framework.views import APIView
+from django.db.models import Count
 
 
 class DocumentUploadView(generics.CreateAPIView):
@@ -98,3 +100,24 @@ class DocumentSearchView(generics.ListAPIView):
             )
             .order_by("-uploaded_at")
         )
+        
+class DashboardStatsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        documents = Document.objects.filter(
+            uploaded_by=request.user
+        )
+
+        total_documents = documents.count()
+        completed = documents.filter(status="COMPLETED").count()
+        processing = documents.filter(status="PROCESSING").count()
+        failed = documents.filter(status="FAILED").count()
+
+        return Response({
+            "total_documents": total_documents,
+            "completed": completed,
+            "processing": processing,
+            "failed": failed,
+            "ai_chats": 0
+        })

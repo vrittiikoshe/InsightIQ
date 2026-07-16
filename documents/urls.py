@@ -5,6 +5,7 @@ from .views import (
     DocumentDetailView,
     DocumentDeleteView,
     DocumentSearchView,
+    DashboardStatsView,
 )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path("<int:pk>/", DocumentDetailView.as_view(), name="document-detail"),
     path("delete/<int:pk>/", DocumentDeleteView.as_view(), name="document-delete"),
     path("search/", DocumentSearchView.as_view(), name="document-search"),
+    path("stats/", DashboardStatsView.as_view(), name="dashboard-stats"),
 ]
