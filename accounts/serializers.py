@@ -37,3 +37,12 @@ class ProfileSerializer(serializers.ModelSerializer):
             "is_verified",
             "created_at",
         ]
+        
+class UpdateProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "full_name",
+            "company_name",
+            "profile_picture",
+        ]

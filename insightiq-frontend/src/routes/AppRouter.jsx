@@ -5,6 +5,8 @@ import Register from "../pages/Register";
 import Dashboard from "../pages/Dashboard";
 import DocumentDetails from "../pages/DocumentDetails";
 import Documents from "../pages/Documents";
+import Analytics from "../pages/Analytics";
+import Settings from "../pages/Settings";
 
 
 function AppRouter() {
@@ -16,6 +18,8 @@ function AppRouter() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/documents/:id" element={<DocumentDetails />} />
         <Route path="/documents" element={<Documents />} />
+        <Route path="/analytics" element={<Analytics />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </BrowserRouter>
   );

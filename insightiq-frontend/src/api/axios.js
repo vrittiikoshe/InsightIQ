@@ -7,7 +7,11 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("access");
 
-  if (token) {
+  // Google login endpoint par Authorization header mat bhejo
+  if (
+    token &&
+    !config.url.includes("/accounts/google-login/")
+  ) {
     config.headers.Authorization = `Bearer ${token}`;
   }
 

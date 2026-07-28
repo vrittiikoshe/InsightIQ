@@ -48,15 +48,15 @@ function Sidebar() {
         <SidebarItem
           icon={<BarChart3 size={20} />}
           label="Analytics"
-          active={false}
-          onClick={() => alert("Coming Soon 🚀")}
+          active={location.pathname === "/analytics"}
+          onClick={() => navigate("/analytics")}
         />
 
         <SidebarItem
           icon={<Settings size={20} />}
           label="Settings"
-          active={false}
-          onClick={() => alert("Coming Soon 🚀")}
+          active={location.pathname === "/settings"}
+          onClick={() => navigate("/settings")}
         />
 
       </nav>

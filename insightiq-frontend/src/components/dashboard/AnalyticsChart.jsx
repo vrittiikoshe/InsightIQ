@@ -3,23 +3,33 @@ import {
   ArcElement,
   Tooltip,
   Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
 } from "chart.js";
 
-import { Doughnut } from "react-chartjs-2";
+import {
+  Doughnut,
+  Bar,
+  Line,
+} from "react-chartjs-2";
 
 ChartJS.register(
   ArcElement,
   Tooltip,
-  Legend
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement
 );
 
 function AnalyticsChart({ stats }) {
-  const data = {
-    labels: [
-      "Completed",
-      "Processing",
-      "Failed",
-    ],
+  const doughnutData = {
+    labels: ["Completed", "Processing", "Failed"],
 
     datasets: [
       {
@@ -46,45 +56,174 @@ function AnalyticsChart({ stats }) {
     ],
   };
 
-  const options = {
+  const barData = {
+    labels: ["Completed", "Processing", "Failed"],
+
+    datasets: [
+      {
+        label: "Documents",
+
+        data: [
+          stats.completed,
+          stats.processing,
+          stats.failed,
+        ],
+
+        backgroundColor: [
+          "#22C55E",
+          "#F59E0B",
+          "#EF4444",
+        ],
+
+        borderRadius: 8,
+      },
+    ],
+  };
+
+  const lineData = {
+    labels:
+      stats.monthly_uploads?.map((item) => item.month) || [],
+
+    datasets: [
+      {
+        label: "Monthly Uploads",
+
+        data:
+          stats.monthly_uploads?.map((item) => item.count) || [],
+
+        borderColor: "#65735B",
+        backgroundColor: "rgba(101,115,91,0.15)",
+
+        fill: true,
+
+        tension: 0.4,
+
+        pointBackgroundColor: "#65735B",
+
+        pointRadius: 5,
+      },
+    ],
+  };
+
+  const doughnutOptions = {
     responsive: true,
 
     plugins: {
       legend: {
         position: "bottom",
-
-        labels: {
-          padding: 20,
-          font: {
-            size: 14,
-            weight: "bold",
-          },
-        },
       },
     },
 
     cutout: "70%",
   };
 
+  const commonOptions = {
+    responsive: true,
+
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+  };
+
   return (
     <div className="mt-10 bg-white rounded-3xl border border-stone-200 p-8">
 
-      <h2 className="text-2xl font-bold mb-8">
-        Document Analytics
+      <h2 className="text-3xl font-bold mb-8">
+        Analytics Overview
       </h2>
 
-      <div className="flex justify-center">
+      {/* Summary Cards */}
 
-        <div className="w-[340px] h-[340px]">
+      <div className="grid grid-cols-4 gap-5 mb-10">
+
+        <SummaryCard
+          title="Documents"
+          value={stats.total_documents}
+          color="bg-blue-50"
+        />
+
+        <SummaryCard
+          title="Completed"
+          value={stats.completed}
+          color="bg-green-50"
+        />
+
+        <SummaryCard
+          title="Processing"
+          value={stats.processing}
+          color="bg-yellow-50"
+        />
+
+        <SummaryCard
+          title="Failed"
+          value={stats.failed}
+          color="bg-red-50"
+        />
+
+      </div>
+
+      {/* Charts */}
+
+      <div className="grid lg:grid-cols-2 gap-8">
+
+        <div className="bg-stone-50 rounded-2xl p-6">
+
+          <h3 className="font-semibold text-lg mb-5">
+            Status Distribution
+          </h3>
 
           <Doughnut
-            data={data}
-            options={options}
+            data={doughnutData}
+            options={doughnutOptions}
+          />
+
+        </div>
+
+        <div className="bg-stone-50 rounded-2xl p-6">
+
+          <h3 className="font-semibold text-lg mb-5">
+            Status Comparison
+          </h3>
+
+          <Bar
+            data={barData}
+            options={commonOptions}
+          />
+
+        </div>
+
+        <div className="lg:col-span-2 bg-stone-50 rounded-2xl p-6">
+
+          <h3 className="font-semibold text-lg mb-5">
+            Monthly Upload Trend
+          </h3>
+
+          <Line
+            data={lineData}
+            options={commonOptions}
           />
 
         </div>
 
       </div>
+
+    </div>
+  );
+}
+
+function SummaryCard({ title, value, color }) {
+  return (
+    <div className={`${color} rounded-2xl p-6`}>
+
+      <p className="text-stone-500 text-sm">
+        {title}
+      </p>
+
+      <h2 className="text-3xl font-bold mt-2">
+        {value}
+      </h2>
 
     </div>
   );
