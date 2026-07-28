@@ -1,25 +1,38 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText } from "lucide-react";
+import {
+  ArrowLeft,
+  FileText,
+  Download,
+  ZoomIn,
+  ZoomOut,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 import { Document, Page, pdfjs } from "react-pdf";
+
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
 import { getDocument } from "../services/documentService";
 import ChatBox from "../components/chat/ChatBox";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString();
+pdfjs.GlobalWorkerOptions.workerSrc =
+  `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
 
 function DocumentDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [document, setDocument] = useState(null);
+
   const [numPages, setNumPages] = useState(0);
+
+  const [pageNumber, setPageNumber] = useState(1);
+
+  const [scale, setScale] = useState(1.1);
 
   useEffect(() => {
     loadDocument();
@@ -28,9 +41,12 @@ function DocumentDetails() {
   const loadDocument = async () => {
     try {
       const data = await getDocument(id);
+
+      console.log(data.file);
+
       setDocument(data);
     } catch (error) {
-      console.error("Error loading document:", error);
+      console.error(error);
     }
   };
 
@@ -38,155 +54,264 @@ function DocumentDetails() {
     setNumPages(numPages);
   };
 
+  const nextPage = () => {
+    if (pageNumber < numPages) {
+      setPageNumber((prev) => prev + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (pageNumber > 1) {
+      setPageNumber((prev) => prev - 1);
+    }
+  };
+
+  const zoomIn = () => {
+    setScale((prev) => Math.min(prev + 0.2, 3));
+  };
+
+  const zoomOut = () => {
+    setScale((prev) => Math.max(prev - 0.2, 0.6));
+  };
+
   if (!document) {
     return (
-      <div className="flex items-center justify-center min-h-screen text-xl">
-        Loading...
+      <div className="min-h-screen flex items-center justify-center text-xl">
+        Loading document...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-stone-100 p-8">
+    <div className="min-h-screen bg-[#F7F7F4] p-8">
 
-      <button
-        onClick={() => navigate("/dashboard")}
-        className="flex items-center gap-2 mb-8 text-[#65735B] hover:underline"
-      >
-        <ArrowLeft size={18} />
-        Back to Dashboard
-      </button>
+  {/* Header */}
 
-      <h1 className="text-4xl font-bold mb-8">
-        {document.title}
-      </h1>
+  <div className="flex items-center justify-between mb-8">
 
-      <div className="grid lg:grid-cols-2 gap-8">
+    <button
+      onClick={() => navigate("/documents")}
+      className="flex items-center gap-2 text-[#65735B] font-medium hover:underline"
+    >
+      <ArrowLeft size={18} />
+      Back to Documents
+    </button>
 
-      {/* LEFT */}
+    <a
+      href={document.file}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 bg-[#65735B] text-white px-5 py-3 rounded-xl hover:bg-[#55624D] transition"
+    >
+      <Download size={18} />
+      Download PDF
+    </a>
 
-      <div className="bg-white rounded-3xl shadow p-6">
+  </div>
 
-        <div className="flex items-center gap-3 mb-5">
+  <h1 className="text-4xl font-bold mb-8">
+    {document.title}
+  </h1>
+
+  <div className="grid lg:grid-cols-[1.3fr_0.7fr] gap-8">
+
+    {/* ================= LEFT PANEL ================= */}
+
+    <div className="bg-white rounded-3xl border border-stone-200 shadow-sm">
+
+      {/* Toolbar */}
+
+      <div className="flex justify-between items-center px-6 py-5 border-b">
+
+        <h2 className="flex items-center gap-2 text-2xl font-bold">
+
           <FileText className="text-[#65735B]" />
-          <h2 className="text-2xl font-bold">
-            PDF Preview
-          </h2>
-        </div>
 
-        <div className="border rounded-xl overflow-auto h-[750px] flex justify-center bg-stone-100">
+          PDF Preview
 
-          <Document
-            file={document.file}
-            onLoadSuccess={onDocumentLoadSuccess}
-            loading="Loading PDF..."
-            error="Unable to load PDF preview."
+        </h2>
+
+        <div className="flex items-center gap-3">
+
+          <button
+            onClick={zoomOut}
+            className="p-2 rounded-lg border hover:bg-stone-100"
           >
-            {Array.from({ length: numPages }, (_, index) => (
-              <Page
-                key={index}
-                pageNumber={index + 1}
-                width={550}
-              />
-            ))}
-          </Document>
+            <ZoomOut size={18} />
+          </button>
 
-        </div>
+          <span className="font-semibold">
+            {Math.round(scale * 100)}%
+          </span>
 
-        <div className="mt-5">
-          <a
-            href={document.file}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-[#65735B] hover:bg-[#55624D] text-white px-5 py-2 rounded-xl inline-block"
+          <button
+            onClick={zoomIn}
+            className="p-2 rounded-lg border hover:bg-stone-100"
           >
-            Open Original PDF
-          </a>
+            <ZoomIn size={18} />
+          </button>
+
         </div>
 
       </div>
 
-      {/* RIGHT */}
+      {/* PDF */}
 
-      <div className="space-y-6">
+      <div className="bg-stone-100 h-[760px] overflow-auto flex justify-center py-8">
 
-        <div className="bg-white rounded-3xl shadow p-6">
-          <h2 className="text-xl font-bold mb-3">
-            AI Summary
-          </h2>
+        <Document
+          file={document.file}
+          onLoadSuccess={onDocumentLoadSuccess}
+          loading="Loading PDF..."
+          error="Unable to load PDF preview."
+        >
+          <Page
+            pageNumber={pageNumber}
+            scale={scale}
+          />
+        </Document>
 
-          <p className="text-stone-600 leading-7">
-            {document.summary || "No summary available."}
-          </p>
+      </div>
+
+      {/* Footer */}
+
+      <div className="flex justify-between items-center px-6 py-5 border-t">
+
+        <button
+          disabled={pageNumber === 1}
+          onClick={prevPage}
+          className="flex items-center gap-2 border rounded-xl px-4 py-2 disabled:opacity-50"
+        >
+          <ChevronLeft size={18} />
+          Previous
+        </button>
+
+        <span className="font-semibold">
+          Page {pageNumber} of {numPages}
+        </span>
+
+        <button
+          disabled={pageNumber === numPages}
+          onClick={nextPage}
+          className="flex items-center gap-2 border rounded-xl px-4 py-2 disabled:opacity-50"
+        >
+          Next
+          <ChevronRight size={18} />
+        </button>
+
+      </div>
+
+    </div>
+
+    {/* ================= RIGHT PANEL ================= */}
+
+    <div className="space-y-6 sticky top-8 h-fit">
+
+          {/* AI Summary */}
+
+      <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-6">
+
+        <h2 className="text-xl font-bold mb-4">
+          AI Summary
+        </h2>
+
+        <p className="text-stone-600 leading-8 whitespace-pre-line">
+          {document.summary || "No AI summary available."}
+        </p>
+
+      </div>
+
+      {/* Category */}
+
+      <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-6">
+
+        <h2 className="text-xl font-bold mb-4">
+          Category
+        </h2>
+
+        <span className="inline-flex px-4 py-2 rounded-full bg-[#65735B]/10 text-[#65735B] font-medium">
+          {document.category || "Uncategorized"}
+        </span>
+
+      </div>
+
+      {/* Keywords */}
+
+      <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-6">
+
+        <h2 className="text-xl font-bold mb-4">
+          Keywords
+        </h2>
+
+        <div className="flex flex-wrap gap-2">
+
+          {document.keywords?.length ? (
+            document.keywords.map((keyword) => (
+              <span
+                key={keyword}
+                className="px-3 py-2 rounded-full bg-stone-100 text-sm"
+              >
+                {keyword}
+              </span>
+            ))
+          ) : (
+            <p className="text-stone-500">
+              No keywords extracted.
+            </p>
+          )}
+
         </div>
 
-        <div className="bg-white rounded-3xl shadow p-6">
-          <h2 className="text-xl font-bold mb-3">
-            Category
-          </h2>
+      </div>
 
-          <span className="px-4 py-2 rounded-full bg-[#65735B]/10 text-[#65735B]">
-            {document.category || "Unknown"}
-          </span>
-        </div>
+      {/* Insights */}
 
-        <div className="bg-white rounded-3xl shadow p-6">
+      <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-6">
 
-          <h2 className="text-xl font-bold mb-3">
-            Keywords
-          </h2>
+        <h2 className="text-xl font-bold mb-4">
+          AI Insights
+        </h2>
 
-          <div className="flex flex-wrap gap-2">
+        <p className="text-stone-600 leading-8 whitespace-pre-line">
+          {document.insights || "No insights generated."}
+        </p>
 
-            {document.keywords?.length ? (
-              document.keywords.map((keyword) => (
-                <span
-                  key={keyword}
-                  className="px-3 py-2 rounded-full bg-stone-100"
-                >
-                  {keyword}
-                </span>
-              ))
-            ) : (
-              <p>No keywords available.</p>
-            )}
+      </div>
 
-          </div>
+      {/* Recommendations */}
 
-        </div>
+      <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-6">
 
-        <div className="bg-white rounded-3xl shadow p-6">
+        <h2 className="text-xl font-bold mb-4">
+          Recommendations
+        </h2>
 
-          <h2 className="text-xl font-bold mb-3">
-            Insights
-          </h2>
+        <p className="text-stone-600 leading-8 whitespace-pre-line">
+          {document.recommendations ||
+            "No recommendations available."}
+        </p>
 
-          <p className="text-stone-600 leading-7">
-            {document.insights || "No insights available."}
-          </p>
+      </div>
 
-        </div>
+      {/* AI Chat */}
 
-        <div className="bg-white rounded-3xl shadow p-6">
+      <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-6">
 
-          <h2 className="text-xl font-bold mb-3">
-            Recommendations
-          </h2>
+        <h2 className="text-xl font-bold mb-5">
+          Chat with this Document
+        </h2>
 
-          <p className="text-stone-600 leading-7">
-            {document.recommendations || "No recommendations available."}
-          </p>
-          
-          <ChatBox documentId={document.id} />
-
-        </div>
+        <ChatBox documentId={document.id} />
 
       </div>
 
     </div>
 
   </div>
-);
+
+</div>
+
+  );
 }
 
 export default DocumentDetails;
