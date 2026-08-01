@@ -12,32 +12,21 @@ class DocumentChatView(APIView):
 
     def post(self, request):
 
-        question = request.data.get("question")
-
         try:
+            question = request.data.get("question")
             document_id = int(request.data.get("document_id"))
-        except (TypeError, ValueError):
+
+            answer = chat_with_document(question, document_id)
+
+            return Response({
+                "answer": answer
+            })
+
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
             return Response(
-                {"error": "Invalid document_id"},
-                status=400
+                {"error": str(e)},
+                status=500
             )
-
-        try:
-            Document.objects.get(
-                id=document_id,
-                uploaded_by=request.user
-            )
-        except Document.DoesNotExist:
-            return Response(
-                {"error": "Document not found"},
-                status=404
-            )
-
-        answer = chat_with_document(
-            question,
-            document_id
-        )
-
-        return Response({
-            "answer": answer
-        }) 

@@ -2,7 +2,7 @@ import json
 
 from google.api_core.exceptions import ResourceExhausted
 
-from ai_engine.client import model
+from ai_engine.client import client
 
 
 def process_document(document_text):
@@ -41,7 +41,10 @@ Document:
 """
 
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
 
         text = response.text.strip()
 

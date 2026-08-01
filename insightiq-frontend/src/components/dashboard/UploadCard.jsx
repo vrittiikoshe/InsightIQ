@@ -23,22 +23,16 @@ function UploadCard() {
         icon: "📄",
       });
 
-      // Reset file input so same PDF can be selected again if needed
       if (inputRef.current) {
         inputRef.current.value = "";
       }
 
-      // Temporary refresh
-      // Later we'll replace this with automatic state update
       setTimeout(() => {
         window.location.reload();
       }, 1200);
 
     } catch (error) {
-      console.error("Upload Error:", error);
-
-      console.log("Status:", error.response?.status);
-      console.log("Data:", error.response?.data);
+      console.error(error);
 
       toast.error(
         error.response?.data
@@ -54,8 +48,20 @@ function UploadCard() {
   };
 
   return (
-    <div className="mt-10 bg-white rounded-3xl border border-stone-200 p-10">
-
+    <div
+      className="
+        mt-10
+        rounded-3xl
+        border
+        border-stone-200
+        dark:border-slate-700
+        bg-white
+        dark:bg-slate-900
+        p-10
+        shadow-sm
+        transition-all
+      "
+    >
       <input
         ref={inputRef}
         hidden
@@ -64,36 +70,63 @@ function UploadCard() {
         onChange={(e) => handleUpload(e.target.files[0])}
       />
 
-      <div className="flex flex-col items-center justify-center border-2 border-dashed border-stone-300 rounded-2xl py-16">
-
-        <div className="h-20 w-20 rounded-full bg-[#65735B]/10 flex items-center justify-center">
+      <div
+        className="
+          flex
+          flex-col
+          items-center
+          justify-center
+          rounded-2xl
+          border-2
+          border-dashed
+          border-stone-300
+          dark:border-slate-600
+          py-16
+          transition
+        "
+      >
+        <div
+          className="
+            h-20
+            w-20
+            rounded-full
+            bg-[#65735B]/10
+            dark:bg-[#65735B]/20
+            flex
+            items-center
+            justify-center
+          "
+        >
           <UploadCloud
             size={38}
             className="text-[#65735B]"
           />
         </div>
 
-        <h2 className="text-3xl font-bold mt-6">
+        <h2 className="mt-6 text-3xl font-bold text-stone-900 dark:text-white">
           Upload Your Document
         </h2>
 
-        <p className="text-stone-500 mt-3 text-center">
+        <p className="mt-3 text-center text-stone-500 dark:text-slate-400">
           Drag & Drop or Browse PDF
         </p>
 
         <Button
           type="button"
           disabled={loading}
-          className="mt-8 bg-[#65735B] hover:bg-[#55624D] disabled:opacity-70"
           onClick={() => inputRef.current.click()}
+          className="
+            mt-8
+            bg-[#65735B]
+            hover:bg-[#55624D]
+            disabled:opacity-70
+          "
         >
           {loading ? "Uploading..." : "Browse Files"}
         </Button>
-
       </div>
-
     </div>
   );
 }
 
-export default UploadCard;
+export default UploadCard; 

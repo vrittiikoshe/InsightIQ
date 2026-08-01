@@ -9,6 +9,7 @@ from .views import (
     RegisterView,
     ProfileView,
     GoogleLoginView,
+    ChangePasswordView,
 )
 
 urlpatterns = [
@@ -24,5 +25,10 @@ urlpatterns = [
         "google-login/",
         GoogleLoginView.as_view(),
         name="google-login",
+    ),
+    path(
+        "change-password/",
+        ChangePasswordView.as_view(),
+        name="change-password",
     ),
 ]
