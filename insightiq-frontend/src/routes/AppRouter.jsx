@@ -7,7 +7,9 @@ import DocumentDetails from "../pages/DocumentDetails";
 import Documents from "../pages/Documents";
 import Analytics from "../pages/Analytics";
 import Settings from "../pages/Settings";
-
+import Profile from "../pages/Profile";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword from "../pages/ResetPassword";
 
 function AppRouter() {
   return (
@@ -20,6 +22,10 @@ function AppRouter() {
         <Route path="/documents" element={<Documents />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
       </Routes>
     </BrowserRouter>
   );

@@ -15,4 +15,5 @@ urlpatterns = [
     path("delete/<int:pk>/", DocumentDeleteView.as_view(), name="document-delete"),
     path("search/", DocumentSearchView.as_view(), name="document-search"),
     path("stats/", DashboardStatsView.as_view(), name="dashboard-stats"),
+    
 ]
