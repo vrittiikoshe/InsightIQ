@@ -20,7 +20,7 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
 import { getDocument } from "../services/documentService";
-import ChatBox from "../components/chat/ChatBox";
+
 
 pdfjs.GlobalWorkerOptions.workerSrc =
   `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -532,21 +532,6 @@ function DocumentDetails() {
                 {documentData.recommendations ||
                   "No recommendations available yet."}
               </p>
-
-            </div>
-
-
-            {/* AI CHAT */}
-
-            <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-6">
-
-              <h2 className="text-xl font-bold mb-5 text-stone-900">
-                Chat with this Document
-              </h2>
-
-              <ChatBox
-                documentId={documentData.id}
-              />
 
             </div>
 

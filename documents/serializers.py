@@ -1,3 +1,5 @@
+import os
+
 from rest_framework import serializers
 
 from .models import Document
@@ -10,6 +12,7 @@ class DocumentSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+
         model = Document
 
         fields = [
@@ -20,6 +23,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             "uploaded_by",
             "uploaded_at",
             "status",
+            "extracted_text",
             "summary",
             "category",
             "keywords",
@@ -30,11 +34,10 @@ class DocumentSerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             "id",
-            "title",
-            "file_type",
             "uploaded_by",
             "uploaded_at",
             "status",
+            "extracted_text",
             "summary",
             "category",
             "keywords",
@@ -43,37 +46,64 @@ class DocumentSerializer(serializers.ModelSerializer):
             "ai_processed",
         ]
 
-    def create(self, validated_data):
+    # ==========================================
+    # FILE VALIDATION
+    # ==========================================
 
-        uploaded_file = validated_data.get("file")
+    def validate_file(self, value):
 
-        if uploaded_file:
-            filename = uploaded_file.name
+        allowed_extensions = [
+            ".pdf",
+            ".docx",
+            ".txt",
+        ]
 
-            # Title from filename
-            title = filename.rsplit(".", 1)[0]
+        extension = os.path.splitext(
+            value.name
+        )[1].lower()
 
-            # File extension
-            extension = filename.rsplit(".", 1)[-1].upper()
+        if extension not in allowed_extensions:
 
-            # Convert extension to model choices
-            if extension == "PDF":
-                file_type = "PDF"
+            raise serializers.ValidationError(
+                "Only PDF, DOCX and TXT files are allowed."
+            )
 
-            elif extension == "DOCX":
-                file_type = "DOCX"
+        return value
 
-            elif extension == "TXT":
-                file_type = "TXT"
+    # ==========================================
+    # FILE TYPE VALIDATION
+    # ==========================================
 
-            else:
-                raise serializers.ValidationError(
-                    {
-                        "file": "Only PDF, DOCX and TXT files are allowed."
-                    }
+    def validate(self, attrs):
+
+        file = attrs.get("file")
+
+        if file:
+
+            extension = os.path.splitext(
+                file.name
+            )[1].lower()
+
+            expected_file_type = {
+                ".pdf": "PDF",
+                ".docx": "DOCX",
+                ".txt": "TXT",
+            }
+
+            detected_type = (
+                expected_file_type.get(
+                    extension
                 )
+            )
 
-            validated_data["title"] = title
-            validated_data["file_type"] = file_type
+            if detected_type is None:
 
-        return super().create(validated_data) 
+                raise serializers.ValidationError({
+                    "file":
+                    "Unsupported file type."
+                })
+
+            # Automatically set file_type
+            attrs["file_type"] = detected_type
+
+        return attrs 

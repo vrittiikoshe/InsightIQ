@@ -5,45 +5,108 @@ import toast from "react-hot-toast";
 
 import { uploadDocument } from "../../services/documentService";
 
-function UploadCard() {
+function UploadCard({ onUploadSuccess }) {
   const inputRef = useRef(null);
+
   const [loading, setLoading] = useState(false);
 
   const handleUpload = async (file) => {
     if (!file) return;
+
+    // ==========================================
+    // FILE TYPE VALIDATION
+    // ==========================================
+
+    const allowedTypes = [
+      "application/pdf",
+
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+
+      "text/plain",
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      toast.error(
+        "Only PDF, DOCX and TXT files are allowed.",
+        {
+          icon: "❌",
+        }
+      );
+
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
+
+      return;
+    }
+
+    // ==========================================
+    // UPLOAD
+    // ==========================================
 
     try {
       setLoading(true);
 
       const response = await uploadDocument(file);
 
-      console.log("Upload Success:", response);
+      console.log(
+        "Upload Success:",
+        response
+      );
 
-      toast.success("Document uploaded successfully!", {
-        icon: "📄",
-      });
+      toast.success(
+        "Document uploaded successfully!",
+        {
+          icon: "📄",
+        }
+      );
 
+      // Clear input
       if (inputRef.current) {
         inputRef.current.value = "";
       }
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 1200);
+      // Tell Dashboard that upload succeeded
+      if (onUploadSuccess) {
+        onUploadSuccess(response);
+      }
 
     } catch (error) {
-      console.error(error);
 
-      toast.error(
-        error.response?.data
-          ? JSON.stringify(error.response.data)
-          : "Upload failed!",
-        {
-          icon: "❌",
-        }
+      console.error(
+        "Upload Error:",
+        error
       );
+
+      let message =
+        "Failed to upload document.";
+
+      if (error.response?.data) {
+
+        const data =
+          error.response.data;
+
+        if (typeof data === "string") {
+          message = data;
+        } else if (data.detail) {
+          message = data.detail;
+        } else if (data.file) {
+          message = Array.isArray(data.file)
+            ? data.file.join(", ")
+            : data.file;
+        } else {
+          message = JSON.stringify(data);
+        }
+      }
+
+      toast.error(message, {
+        icon: "❌",
+      });
+
     } finally {
+
       setLoading(false);
+
     }
   };
 
@@ -62,13 +125,22 @@ function UploadCard() {
         transition-all
       "
     >
+
+      {/* Hidden File Input */}
+
       <input
         ref={inputRef}
         hidden
         type="file"
-        accept=".pdf"
-        onChange={(e) => handleUpload(e.target.files[0])}
+        accept=".pdf,.docx,.txt"
+        onChange={(e) =>
+          handleUpload(
+            e.target.files?.[0]
+          )
+        }
       />
+
+      {/* Upload Area */}
 
       <div
         className="
@@ -85,6 +157,9 @@ function UploadCard() {
           transition
         "
       >
+
+        {/* Icon */}
+
         <div
           className="
             h-20
@@ -103,18 +178,58 @@ function UploadCard() {
           />
         </div>
 
-        <h2 className="mt-6 text-3xl font-bold text-stone-900 dark:text-white">
+
+        {/* Heading */}
+
+        <h2
+          className="
+            mt-6
+            text-3xl
+            font-bold
+            text-stone-900
+            dark:text-white
+          "
+        >
           Upload Your Document
         </h2>
 
-        <p className="mt-3 text-center text-stone-500 dark:text-slate-400">
-          Drag & Drop or Browse PDF
+
+        {/* Description */}
+
+        <p
+          className="
+            mt-3
+            text-center
+            text-stone-500
+            dark:text-slate-400
+          "
+        >
+          Upload PDF, DOCX or TXT files
         </p>
+
+
+        {/* Supported Formats */}
+
+        <p
+          className="
+            mt-2
+            text-xs
+            text-stone-400
+            dark:text-slate-500
+          "
+        >
+          Supported formats: PDF • DOCX • TXT
+        </p>
+
+
+        {/* Button */}
 
         <Button
           type="button"
           disabled={loading}
-          onClick={() => inputRef.current.click()}
+          onClick={() =>
+            inputRef.current?.click()
+          }
           className="
             mt-8
             bg-[#65735B]
@@ -122,9 +237,13 @@ function UploadCard() {
             disabled:opacity-70
           "
         >
-          {loading ? "Uploading..." : "Browse Files"}
+          {loading
+            ? "Uploading..."
+            : "Browse Files"}
         </Button>
+
       </div>
+
     </div>
   );
 }

@@ -92,7 +92,7 @@ function LoginForm() {
         <div className="mb-8">
 
           <h2 className="text-4xl font-bold text-stone-900">
-            Welcome back 🚀
+            Welcome 🚀
           </h2>
 
           <p className="mt-2 text-stone-500">
