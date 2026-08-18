@@ -1,14 +1,21 @@
 import chromadb
 
-client = chromadb.PersistentClient(path="./chromadb")
+from .embeddings import generate_embedding
+
+
+client = chromadb.PersistentClient(
+    path="./chromadb"
+)
 
 collection = client.get_or_create_collection(
     name="documents"
 )
-from .embeddings import generate_embedding
 
 
 def add_document(document_id, chunks):
+
+    if not chunks:
+        return
 
     ids = []
     embeddings = []
@@ -16,28 +23,22 @@ def add_document(document_id, chunks):
 
     for i, chunk in enumerate(chunks):
 
-        ids.append(f"{document_id}_{i}")
+        ids.append(
+            f"{document_id}_{i}"
+        )
 
         embeddings.append(
             generate_embedding(chunk)
         )
 
         metadatas.append({
-
             "document_id": document_id,
-
-            "chunk": i
-
+            "chunk": i,
         })
 
     collection.add(
-
         ids=ids,
-
         embeddings=embeddings,
-
         documents=chunks,
-
-        metadatas=metadatas
-
+        metadatas=metadatas,
     )
