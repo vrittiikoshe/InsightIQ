@@ -1,6 +1,5 @@
 import json
 
-from google.api_core.exceptions import ResourceExhausted
 
 from ai_engine.client import client
 
@@ -60,12 +59,14 @@ Document:
 
         return data
 
-    except ResourceExhausted:
+    except Exception as e:
+        print("Gemini Error:", e)
+
         return {
             "error": True,
             "summary": "",
             "category": "",
             "keywords": [],
-            "insights": "Gemini API quota exceeded. Please try again later.",
-            "recommendations": "Please retry after the quota resets."
+            "insights": "Gemini API error. Please try again later.",
+            "recommendations": "Please retry later."
         }
