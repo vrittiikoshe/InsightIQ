@@ -1,21 +1,15 @@
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from google import genai
+from django.conf import settings
 
-_embeddings = None
-
-
-def get_embeddings():
-    global _embeddings
-
-    if _embeddings is None:
-        _embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2"
-        )
-
-    return _embeddings
+client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 
 def generate_embedding(text):
-    embeddings = get_embeddings()
-    return embeddings.embed_query(text)
+    response = client.models.embed_content(
+        model="text-embedding-004",
+        contents=text
+    )
+
+    return response.embeddings[0].values
 
 

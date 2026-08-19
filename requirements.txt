@@ -43,13 +43,6 @@ langchain-text-splitters==0.3.11
 
 chromadb==1.5.9
 
-# ================================
-# Embeddings
-# ================================
-
-sentence-transformers
-
-langchain-community
 
 # ================================
 # Document Processing

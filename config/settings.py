@@ -10,6 +10,7 @@ import os
 
 from dotenv import load_dotenv
 from decouple import config
+import dj_database_url
 
 
 # =========================================================
@@ -35,7 +36,6 @@ SECRET_KEY = os.environ.get(
     "django-insecure-local-development-key"
 )
 
-
 DEBUG = os.environ.get(
     "DEBUG",
     "True"
@@ -51,15 +51,13 @@ ALLOWED_HOSTS = [
     "localhost",
 ]
 
-# Render provides this automatically
+# Render hostname
 RENDER_EXTERNAL_HOSTNAME = os.environ.get(
     "RENDER_EXTERNAL_HOSTNAME"
 )
 
 if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(
-        RENDER_EXTERNAL_HOSTNAME
-    )
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 
 # =========================================================
@@ -87,6 +85,8 @@ INSTALLED_APPS = [
     "analytics_dashboard",
     "core",
 ]
+
+AUTH_USER_MODEL = "accounts.User"
 
 
 # =========================================================
@@ -125,10 +125,8 @@ ROOT_URLCONF = "config.urls"
 # =========================================================
 
 TEMPLATES = [
-
     {
-        "BACKEND":
-            "django.template.backends.django.DjangoTemplates",
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
 
         "DIRS": [
             BASE_DIR / "templates"
@@ -137,7 +135,6 @@ TEMPLATES = [
         "APP_DIRS": True,
 
         "OPTIONS": {
-
             "context_processors": [
 
                 "django.template.context_processors.debug",
@@ -147,7 +144,6 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
 
                 "django.contrib.messages.context_processors.messages",
-
             ],
         },
     },
@@ -165,72 +161,24 @@ WSGI_APPLICATION = "config.wsgi.application"
 # DATABASE
 # =========================================================
 
-# Local:
-# Uses your local PostgreSQL database.
-#
-# Production:
-# Render will provide DATABASE_URL.
-#
-# We use dj-database-url to support both.
-
-import dj_database_url
-
-
-DATABASE_URL = os.environ.get(
-    "DATABASE_URL"
-)
-
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL:
 
     DATABASES = {
-
         "default": dj_database_url.parse(
             DATABASE_URL,
             conn_max_age=600,
             ssl_require=True,
         )
-
     }
 
 else:
 
     DATABASES = {
-
         "default": {
-
-            "ENGINE":
-                "django.db.backends.postgresql",
-
-            "NAME":
-                os.environ.get(
-                    "DB_NAME",
-                    "insightiq"
-                ),
-
-            "USER":
-                os.environ.get(
-                    "DB_USER",
-                    "postgres"
-                ),
-
-            "PASSWORD":
-                os.environ.get(
-                    "DB_PASSWORD",
-                    ""
-                ),
-
-            "HOST":
-                os.environ.get(
-                    "DB_HOST",
-                    "localhost"
-                ),
-
-            "PORT":
-                os.environ.get(
-                    "DB_PORT",
-                    "5432"
-                ),
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
@@ -243,22 +191,22 @@ AUTH_PASSWORD_VALIDATORS = [
 
     {
         "NAME":
-            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
 
     {
         "NAME":
-            "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
 
     {
         "NAME":
-            "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
 
     {
         "NAME":
-            "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -269,7 +217,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Kolkata"
 
 USE_I18N = True
 
@@ -280,14 +228,12 @@ USE_TZ = True
 # STATIC FILES
 # =========================================================
 
-STATIC_URL = "/static/"
+STATIC_URL = "static/"
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 STATICFILES_DIRS = [
-
     BASE_DIR / "static",
-
 ]
 
 
@@ -301,33 +247,29 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 
 # =========================================================
-# USER MODEL
-# =========================================================
-
-AUTH_USER_MODEL = "accounts.User"
-
-
-# =========================================================
 # DEFAULT PRIMARY KEY
 # =========================================================
 
-DEFAULT_AUTO_FIELD = (
-    "django.db.models.BigAutoField"
-)
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # =========================================================
-# DJANGO REST FRAMEWORK
+# REST FRAMEWORK
 # =========================================================
 
 REST_FRAMEWORK = {
 
-    "DEFAULT_AUTHENTICATION_CLASSES": (
+    "DEFAULT_AUTHENTICATION_CLASSES": [
 
         "rest_framework_simplejwt.authentication.JWTAuthentication",
 
-    ),
+    ],
 
+    "DEFAULT_PERMISSION_CLASSES": [
+
+        "rest_framework.permissions.AllowAny",
+
+    ],
 }
 
 
@@ -338,22 +280,24 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
 
     "ACCESS_TOKEN_LIFETIME":
-        timedelta(minutes=30),
+        timedelta(minutes=60),
 
     "REFRESH_TOKEN_LIFETIME":
         timedelta(days=7),
 
     "ROTATE_REFRESH_TOKENS":
-        True,
+        False,
 
     "BLACKLIST_AFTER_ROTATION":
-        True,
+        False,
 
+    "AUTH_HEADER_TYPES":
+        ("Bearer",),
 }
 
 
 # =========================================================
-# GEMINI
+# GEMINI AI
 # =========================================================
 
 GEMINI_API_KEY = config(
@@ -384,7 +328,7 @@ CORS_ALLOWED_ORIGINS = [
 
         "CORS_ALLOWED_ORIGINS",
 
-        "http://localhost:5173"
+        "http://localhost:5173,https://insightiq-frontend-7sin.onrender.com"
 
     ).split(",")
 
@@ -397,6 +341,27 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 # =========================================================
+# CSRF
+# =========================================================
+
+CSRF_TRUSTED_ORIGINS = [
+
+    origin.strip()
+
+    for origin in os.environ.get(
+
+        "CSRF_TRUSTED_ORIGINS",
+
+        "http://localhost:5173,https://insightiq-frontend-7sin.onrender.com"
+
+    ).split(",")
+
+    if origin.strip()
+
+]
+
+
+# =========================================================
 # EMAIL
 # =========================================================
 
@@ -404,13 +369,9 @@ EMAIL_BACKEND = (
     "django.core.mail.backends.console.EmailBackend"
 )
 
-DEFAULT_FROM_EMAIL = (
-    "noreply@insightiq.com"
-)
-
 
 # =========================================================
-# PRODUCTION SECURITY
+# SECURITY SETTINGS FOR PRODUCTION
 # =========================================================
 
 if not DEBUG:
@@ -424,4 +385,10 @@ if not DEBUG:
 
     CSRF_COOKIE_SECURE = True
 
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = False
+
+    SECURE_BROWSER_XSS_FILTER = True
+
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+    X_FRAME_OPTIONS = "DENY"
