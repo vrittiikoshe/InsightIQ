@@ -74,3 +74,5 @@ gunicorn==23.0.0
 
 requests==2.31.0
 PyYAML==6.0.2
+
+pillow==11.3.0
