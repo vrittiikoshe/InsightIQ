@@ -6,7 +6,7 @@ client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 def generate_embedding(text):
     response = client.models.embed_content(
-        model="text-embedding-004",
+        model="gemini-embedding-001",
         contents=text
     )
 
