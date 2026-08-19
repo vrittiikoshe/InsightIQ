@@ -50,6 +50,8 @@ chromadb==1.5.9
 
 PyMuPDF==1.26.5
 PyPDF2==3.0.1
+python-docx==1.2.0
+
 
 # ================================
 # Data / ML
