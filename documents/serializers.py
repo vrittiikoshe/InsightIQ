@@ -11,8 +11,6 @@ class DocumentSerializer(serializers.ModelSerializer):
         source="uploaded_by.username"
     )
 
-    file_url = serializers.SerializerMethodField()
-
     class Meta:
 
         model = Document
@@ -21,7 +19,6 @@ class DocumentSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "file",
-            "file_url",
             "file_type",
             "uploaded_by",
             "uploaded_at",
@@ -47,29 +44,9 @@ class DocumentSerializer(serializers.ModelSerializer):
             "insights",
             "recommendations",
             "ai_processed",
-            "file_url",
+            "title",
+            "file_type",
         ]
-
-    # ==========================================
-    # CLOUDINARY FILE URL
-    # ==========================================
-
-    def get_file_url(self, obj):
-
-        if not obj.file:
-            return None
-
-        try:
-            return obj.file.url
-
-        except Exception as e:
-
-            print(
-                "Cloudinary URL Error:",
-                e
-            )
-
-            return None
 
     # ==========================================
     # FILE VALIDATION
@@ -96,38 +73,33 @@ class DocumentSerializer(serializers.ModelSerializer):
         return value
 
     # ==========================================
-    # FILE TYPE VALIDATION
+    # CREATE
     # ==========================================
 
-    def validate(self, attrs):
+    def create(self, validated_data):
 
-        file = attrs.get("file")
+        file = validated_data.get("file")
 
-        if file:
+        extension = os.path.splitext(
+            file.name
+        )[1].lower()
 
-            extension = os.path.splitext(
-                file.name
-            )[1].lower()
+        file_types = {
+            ".pdf": "PDF",
+            ".docx": "DOCX",
+            ".txt": "TXT",
+        }
 
-            expected_file_type = {
-                ".pdf": "PDF",
-                ".docx": "DOCX",
-                ".txt": "TXT",
-            }
+        file_type = file_types.get(extension)
 
-            detected_type = (
-                expected_file_type.get(
-                    extension
-                )
-            )
+        # Remove extension from filename for title
+        title = os.path.splitext(
+            file.name
+        )[0]
 
-            if detected_type is None:
+        validated_data["title"] = title
+        validated_data["file_type"] = file_type
 
-                raise serializers.ValidationError({
-                    "file":
-                    "Unsupported file type."
-                })
-
-            attrs["file_type"] = detected_type
-
-        return attrs 
+        return Document.objects.create(
+            **validated_data
+        )
