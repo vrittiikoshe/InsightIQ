@@ -11,6 +11,8 @@ class DocumentSerializer(serializers.ModelSerializer):
         source="uploaded_by.username"
     )
 
+    file_url = serializers.SerializerMethodField()
+
     class Meta:
 
         model = Document
@@ -19,6 +21,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "file",
+            "file_url",
             "file_type",
             "uploaded_by",
             "uploaded_at",
@@ -44,7 +47,29 @@ class DocumentSerializer(serializers.ModelSerializer):
             "insights",
             "recommendations",
             "ai_processed",
+            "file_url",
         ]
+
+    # ==========================================
+    # CLOUDINARY FILE URL
+    # ==========================================
+
+    def get_file_url(self, obj):
+
+        if not obj.file:
+            return None
+
+        try:
+            return obj.file.url
+
+        except Exception as e:
+
+            print(
+                "Cloudinary URL Error:",
+                e
+            )
+
+            return None
 
     # ==========================================
     # FILE VALIDATION
@@ -103,7 +128,6 @@ class DocumentSerializer(serializers.ModelSerializer):
                     "Unsupported file type."
                 })
 
-            # Automatically set file_type
             attrs["file_type"] = detected_type
 
         return attrs 
